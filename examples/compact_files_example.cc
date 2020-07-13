@@ -13,7 +13,7 @@
 #include "rocksdb/options.h"
 
 using namespace rocksdb;
-std::string kDBPath = "/tmp/rocksdb_compact_files_example";
+std::string kDBPath = "/tmp/rocksdb_compact_files_example2";
 struct CompactionTask;
 
 // This is an example interface of external-compaction algorithm.
@@ -137,11 +137,12 @@ int main() {
   options.create_if_missing = true;
   // Disable RocksDB background compaction.
   options.compaction_style = kCompactionStyleNone;
+  options.disable_auto_compactions = true;
   // Small slowdown and stop trigger for experimental purpose.
-  options.level0_slowdown_writes_trigger = 3;
-  options.level0_stop_writes_trigger = 5;
-  options.IncreaseParallelism(5);
-  options.listeners.emplace_back(new FullCompactor(options));
+  // options.level0_slowdown_writes_trigger = 3;
+  // options.level0_stop_writes_trigger = 5;
+  // options.IncreaseParallelism(5);
+  // options.listeners.emplace_back(new FullCompactor(options));
 
   DB* db = nullptr;
   DestroyDB(kDBPath, options);
@@ -151,17 +152,22 @@ int main() {
 
   // if background compaction is not working, write will stall
   // because of options.level0_stop_writes_trigger
-  for (int i = 1000; i < 99999; ++i) {
+  int end = 9999999;
+  for (int i = 1000; i < end; ++i) {
     db->Put(WriteOptions(), std::to_string(i),
                             std::string(500, 'a' + (i % 26)));
   }
 
   // verify the values are still there
   std::string value;
-  for (int i = 1000; i < 99999; ++i) {
+  for (int i = 1000; i < end; ++i) {
     db->Get(ReadOptions(), std::to_string(i),
                            &value);
     assert(value == std::string(500, 'a' + (i % 26)));
+  }
+
+  for (int i = 1000; i < end; ++i) {
+    assert(db->Delete(WriteOptions(), std::to_string(i)).ok());
   }
 
   // close the db.
