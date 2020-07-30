@@ -138,12 +138,18 @@ int main() {
   options.max_background_jobs = 0;
   options.max_background_compactions = 0;
   options.max_background_flushes = 0;
-  Env::Default()->SetBackgroundThreads(0, Env::Priority::BOTTOM);
-  Env::Default()->SetBackgroundThreads(0, Env::Priority::LOW);
-  Env::Default()->SetBackgroundThreads(0, Env::Priority::HIGH);
+  options.stats_dump_period_sec = 0;
+  options.stats_persist_period_sec = 0;
+  // Env::Default()->SetBackgroundThreads(0, Env::Priority::BOTTOM);
+  // Env::Default()->SetBackgroundThreads(0, Env::Priority::LOW);
+  // Env::Default()->SetBackgroundThreads(0, Env::Priority::HIGH);
   DB* db = nullptr;
   DestroyDB(kDBPath, options);
   Status s = DB::Open(options, kDBPath, &db);
+  Env::Default()->SetBackgroundThreads(0, Env::Priority::BOTTOM);
+  Env::Default()->SetBackgroundThreads(0, Env::Priority::LOW);
+  Env::Default()->SetBackgroundThreads(0, Env::Priority::HIGH);
+
   assert(s.ok());
   assert(db);
 
